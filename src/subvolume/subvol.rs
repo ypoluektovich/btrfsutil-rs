@@ -291,21 +291,15 @@ impl Subvolume {
         let flags_val = flags.map(|v| v.bits()).unwrap_or(0);
         let qgroup_ptr = qgroup.map(|v| v.as_ptr()).unwrap_or(std::ptr::null_mut());
 
-        let transid: u64 = {
-            let mut transid: u64 = 0;
-            unsafe_wrapper!({
-                btrfs_util_create_snapshot(
-                    path_src_cstr.as_ptr(),
-                    path_dest_cstr.as_ptr(),
-                    flags_val,
-                    &mut transid,
-                    qgroup_ptr,
-                )
-            })?;
-            transid
-        };
-
-        unsafe_wrapper!({ btrfs_util_wait_sync(path_dest_cstr.as_ptr(), transid) })?;
+        unsafe_wrapper!({
+            btrfs_util_create_snapshot(
+                path_src_cstr.as_ptr(),
+                path_dest_cstr.as_ptr(),
+                flags_val,
+                std::ptr::null_mut(),
+                qgroup_ptr,
+            )
+        })?;
 
         Self::get(path)
     }
